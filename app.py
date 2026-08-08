@@ -21,7 +21,7 @@ from tkinter import messagebox, ttk
 
 
 APP_NAME = "Codex Responses Tool"
-APP_VERSION = "1.0"
+APP_VERSION = "1.0.1"
 PROGRAM_DIR = (
     Path(sys.executable).resolve().parent
     if getattr(sys, "frozen", False)
@@ -34,6 +34,10 @@ TEMPLATE_CATALOG_PATH = Path(__file__).with_name("assets") / "codex_model_catalo
 MANAGED_PROVIDER_ID = "cpa-gui"
 DEFAULT_PROVIDER_NAME = "Chione Codex"
 MANAGED_CATALOG_FILE = "cpa-gui-model-catalog.json"
+CONFIGURATION_FILES = frozenset({
+    "config.toml",
+    MANAGED_CATALOG_FILE,
+})
 MANAGED_ROOT_KEYS = {
     "model_provider",
     "model",
@@ -218,7 +222,20 @@ def load_snapshot_metadata(snapshot_dir: Path) -> dict[str, Any]:
     return json.loads((snapshot_dir / "snapshot.json").read_text(encoding="utf-8"))
 
 
-def restore_snapshot(snapshot_dir: Path, codex_home: Path, sqlite_home: Path) -> list[str]:
+def restore_snapshot(
+    snapshot_dir: Path,
+    codex_home: Path,
+    sqlite_home: Path,
+    include_session_data: bool = False,
+) -> list[str]:
+    """Restore a snapshot without overwriting conversations by default.
+
+    A snapshot is taken before applying a provider.  Restoring its session
+    databases later would roll conversations back to that earlier point, which
+    makes messages created with the Responses API disappear.  Normal restore is
+    therefore intentionally limited to this tool's configuration files.  Full
+    data recovery remains available through the explicit opt-in path.
+    """
     payload = snapshot_dir / "payload"
     if not payload.is_dir():
         raise FileNotFoundError("Snapshot payload folder not found.")
@@ -231,6 +248,8 @@ def restore_snapshot(snapshot_dir: Path, codex_home: Path, sqlite_home: Path) ->
             if item.is_dir():
                 continue
             relative = item.relative_to(root_payload)
+            if not include_session_data and relative.as_posix() not in CONFIGURATION_FILES:
+                continue
             target = target_root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(item, target)
@@ -793,7 +812,7 @@ class AppUI:
         button_row.grid(row=4, column=0, columnspan=3, sticky="ew", padx=6, pady=6)
         ttk.Button(button_row, text="Apply to Codex", command=self.apply_configuration).pack(side="left")
         ttk.Button(button_row, text="Create Snapshot Only", command=self.create_manual_snapshot).pack(side="left", padx=(8, 0))
-        ttk.Button(button_row, text="Restore Latest Snapshot", command=self.restore_latest_snapshot).pack(side="left", padx=(8, 0))
+        ttk.Button(button_row, text="Restore Latest Configuration", command=self.restore_latest_snapshot).pack(side="left", padx=(8, 0))
         return tab
 
     def _build_backup_tab(self, parent: ttk.Notebook) -> ttk.Frame:
@@ -808,12 +827,16 @@ class AppUI:
 
         top = ttk.Frame(tab)
         top.grid(row=0, column=0, columnspan=2, sticky="ew")
-        ttk.Label(top, text="Select a snapshot to restore. A snapshot includes Codex config and local session data.").pack(side="left")
+        ttk.Label(
+            top,
+            text="Normal restore changes only configuration and keeps current conversations. Full recovery can overwrite conversations.",
+        ).pack(side="left")
 
         actions = ttk.Frame(tab)
         actions.grid(row=2, column=0, columnspan=2, sticky="ew", padx=6, pady=(4, 0))
         ttk.Button(actions, text="Refresh List", command=self.refresh_snapshots).pack(side="left")
-        ttk.Button(actions, text="Restore Selected Snapshot", command=self.restore_selected_snapshot).pack(side="left", padx=(8, 0))
+        ttk.Button(actions, text="Restore Selected Configuration", command=self.restore_selected_snapshot).pack(side="left", padx=(8, 0))
+        ttk.Button(actions, text="Full Data Recovery", command=self.restore_selected_snapshot_with_data).pack(side="left", padx=(8, 0))
         ttk.Button(actions, text="Open Backup Folder", command=self.open_backup_dir).pack(side="left", padx=(8, 0))
         ttk.Label(tab, textvariable=self.snapshot_status_var).grid(row=3, column=0, columnspan=2, sticky="w", padx=6, pady=(8, 0))
         return tab
@@ -935,7 +958,7 @@ class AppUI:
         if not snapshots:
             messagebox.showinfo(APP_NAME, "No snapshots are available to restore.")
             return
-        self._restore_snapshot(snapshots[0])
+        self._restore_snapshot(snapshots[0], include_session_data=False)
 
     def restore_selected_snapshot(self) -> None:
         selection = self.snapshot_list.curselection()
@@ -943,13 +966,28 @@ class AppUI:
             messagebox.showinfo(APP_NAME, "Please select a snapshot first.")
             return
         snapshot_dir = self.snapshot_items[selection[0]]
-        self._restore_snapshot(snapshot_dir)
+        self._restore_snapshot(snapshot_dir, include_session_data=False)
 
-    def _restore_snapshot(self, snapshot_dir: Path) -> None:
+    def restore_selected_snapshot_with_data(self) -> None:
+        selection = self.snapshot_list.curselection()
+        if not selection:
+            messagebox.showinfo(APP_NAME, "Please select a snapshot first.")
+            return
+        self._restore_snapshot(self.snapshot_items[selection[0]], include_session_data=True)
+
+    def _restore_snapshot(self, snapshot_dir: Path, include_session_data: bool) -> None:
+        action = (
+            "Full data recovery will overwrite current local conversation data with the older snapshot. "
+            "A new safety snapshot will be created first."
+            if include_session_data
+            else "Configuration restore will keep all current local conversations unchanged."
+        )
         confirmed = messagebox.askokcancel(
             APP_NAME,
             "Before restoring, completely close Codex. Open Codex processes may lock session files "
-            "and prevent a complete restore.\n\nClick OK only after Codex has been closed.",
+            "and prevent a complete restore.\n\n"
+            + action
+            + "\n\nClick OK only after Codex has been closed.",
             icon="warning",
         )
         if not confirmed:
@@ -960,10 +998,18 @@ class AppUI:
 
         def worker() -> None:
             try:
-                restored = restore_snapshot(snapshot_dir, codex_home, sqlite_home)
+                safety_snapshot = create_snapshot(codex_home, sqlite_home, "before-restore")
+                restored = restore_snapshot(
+                    snapshot_dir,
+                    codex_home,
+                    sqlite_home,
+                    include_session_data=include_session_data,
+                )
+                result_description = "full data recovery" if include_session_data else "configuration restore"
                 self.work_queue.put((
                     "info",
-                    f"Snapshot restored successfully: {snapshot_dir} ({len(restored)} files)"
+                    f"{result_description.title()} completed: {snapshot_dir} ({len(restored)} files)"
+                    f"\nSafety snapshot saved: {safety_snapshot}"
                     "\n\nYou can now start Codex again.",
                 ))
             except Exception as exc:

@@ -80,7 +80,7 @@ class SnapshotTests(unittest.TestCase):
             snapshot = create_snapshot(codex_home, sqlite_home, "test")
             target_codex = root / "codex-b"
             target_sqlite = root / "sqlite-b"
-            restored = restore_snapshot(snapshot, target_codex, target_sqlite)
+            restored = restore_snapshot(snapshot, target_codex, target_sqlite, include_session_data=True)
 
             self.assertTrue((target_codex / "config.toml").is_file())
             self.assertTrue((target_codex / "sessions" / "rollout.jsonl").is_file())
@@ -88,6 +88,29 @@ class SnapshotTests(unittest.TestCase):
             self.assertTrue((target_codex / "logs_2.sqlite-wal").is_file())
             self.assertTrue((target_sqlite / "state_5.sqlite").is_file())
             self.assertGreaterEqual(len(restored), 3)
+
+    def test_normal_restore_preserves_current_conversation_data(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            codex_home = root / "codex"
+            codex_home.mkdir()
+            (codex_home / "config.toml").write_text('model = "before"\n', encoding="utf-8")
+            sessions = codex_home / "sessions"
+            sessions.mkdir()
+            (sessions / "rollout.jsonl").write_text('{"message":"before"}\n', encoding="utf-8")
+            snapshot = create_snapshot(codex_home, codex_home, "test")
+
+            (codex_home / "config.toml").write_text('model = "after"\n', encoding="utf-8")
+            (sessions / "rollout.jsonl").write_text('{"message":"new Responses API conversation"}\n', encoding="utf-8")
+
+            restored = restore_snapshot(snapshot, codex_home, codex_home)
+
+            self.assertEqual((codex_home / "config.toml").read_text(encoding="utf-8"), 'model = "before"\n')
+            self.assertEqual(
+                (sessions / "rollout.jsonl").read_text(encoding="utf-8"),
+                '{"message":"new Responses API conversation"}\n',
+            )
+            self.assertEqual(restored, [str(codex_home / "config.toml")])
 
     def test_provider_repair_keeps_existing_threads_visible(self):
         with tempfile.TemporaryDirectory() as tmp:

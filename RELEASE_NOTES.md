@@ -1,5 +1,51 @@
 # 发布说明 / Release Notes
 
+## v1.0.1
+
+### 简体中文
+
+此版本修复了一个会话数据保护问题：此前恢复“应用配置”前创建的快照时，工具会把快照中的旧会话文件和 SQLite 数据库覆盖到当前数据上，导致之后在 Responses API 模式下新增或更新的对话在 Codex 中消失。
+
+#### 修复内容
+
+- 默认恢复现在仅还原 Codex 配置和本工具生成的模型目录，不会覆盖当前本地对话、会话索引或 SQLite 会话数据库。
+- 新增明确的“Full Data Recovery（完整数据恢复）”入口，仅在确实需要回退会话数据时使用。
+- 每次恢复前自动创建安全快照；即使选择完整数据恢复，也可以回到恢复前的当前状态。
+- 增加自动化回归测试，验证恢复旧配置后新的 Responses API 对话仍会保留。
+
+#### 升级说明
+
+直接下载并替换为本版本的 `CodexResponsesTool.exe`。普通恢复现在是安全的配置恢复；如需完整回退历史会话，请完全关闭 Codex 后使用“Full Data Recovery”。
+
+#### 下载和校验
+
+下载 `CodexResponsesTool.exe` 和同目录的 `CodexResponsesTool.exe.sha256`。运行前请核对 SHA-256：
+
+`7b53ee7b27dc3da81e93334e6f06375617ff738b31a3cc153706ef82204fa2d7`
+
+---
+
+### English
+
+This release fixes a conversation-data protection issue. Previously, restoring a snapshot created before applying configuration overwrote current session files and SQLite databases with the older snapshot. As a result, conversations created or updated later while using the Responses API could disappear from Codex.
+
+#### Fixes
+
+- Normal restore now restores only Codex configuration and this tool's model catalog. It does not overwrite current local conversations, session indexes, or SQLite session databases.
+- Adds an explicit “Full Data Recovery” option for the rare case where conversation data truly needs to be rolled back.
+- Automatically creates a safety snapshot before every restore, so full data recovery can be undone by restoring the pre-recovery state.
+- Adds a regression test that verifies new Responses API conversations remain after restoring older configuration.
+
+#### Upgrade notes
+
+Download and replace your existing `CodexResponsesTool.exe` with this release. Normal restore is now safe for configuration recovery. To roll back historical conversation data, fully close Codex and use “Full Data Recovery”.
+
+#### Download and verification
+
+Download `CodexResponsesTool.exe` and `CodexResponsesTool.exe.sha256` from this release. Verify the SHA-256 checksum before running:
+
+`7b53ee7b27dc3da81e93334e6f06375617ff738b31a3cc153706ef82204fa2d7`
+
 ## v1.0
 
 ### 简体中文

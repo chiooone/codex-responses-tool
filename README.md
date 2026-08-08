@@ -1,8 +1,8 @@
 # Codex Responses Tool
 
-当前版本 / Current release：**v1.0**
+当前版本 / Current release：**v1.0.1**
 
-[下载 v1.0 / Download v1.0](https://github.com/chiooone/codex-responses-tool/releases/tag/v1.0)
+[下载 v1.0.1 / Download v1.0.1](https://github.com/chiooone/codex-responses-tool/releases/tag/v1.0.1)
 
 ## 简体中文
 
@@ -15,7 +15,7 @@ Codex Responses Tool 是一个面向 Windows 的图形化工具，用于将 Code
 - 检测 API 可用模型并通过列表供用户选择。
 - 写入 Codex 的 `config.toml` 和 `cpa-gui-model-catalog.json`。
 - provider 显示名称固定为 `Chione Codex`。
-- 备份和恢复 Codex 配置及本地对话数据。
+- 默认恢复仅还原 Codex 配置，保留当前本地对话数据；需要时可显式执行完整数据恢复。
 - 切换 provider 时同步历史对话元数据，避免已有对话暂时消失。
 - 将保存的 API 设置和快照存放在程序旁边的 `app_data` 目录中。
 
@@ -25,7 +25,7 @@ Codex Responses Tool 是一个面向 Windows 的图形化工具，用于将 Code
 2. 检测可用模型并选择默认模型。
 3. 完全关闭 Codex，然后点击 `Apply to Codex`。
 4. 出现成功提示后重新启动 Codex。
-5. 如需恢复快照，请先完全关闭 Codex，再确认恢复警告。
+5. 如需恢复快照，请先完全关闭 Codex；普通恢复不会覆盖当前对话，完整数据恢复会先自动创建安全快照。
 
 ### 从源代码运行
 
@@ -76,7 +76,7 @@ Codex Responses Tool is a Windows-first graphical utility that connects Codex De
 - Detects available API models and presents them in a selection list.
 - Writes Codex `config.toml` and `cpa-gui-model-catalog.json`.
 - Uses the fixed provider display name `Chione Codex`.
-- Backs up and restores Codex configuration and local conversation data.
+- Normal restore changes only Codex configuration and preserves current local conversations; full data recovery is explicit.
 - Synchronizes historical conversation metadata when switching providers so existing conversations remain visible.
 - Stores saved API settings and snapshots in `app_data` next to the program.
 
@@ -86,7 +86,7 @@ Codex Responses Tool is a Windows-first graphical utility that connects Codex De
 2. Detect the available models and select a default model.
 3. Close Codex, then click `Apply to Codex`.
 4. Restart Codex after the success message appears.
-5. To restore a snapshot, completely close Codex before confirming the restore warning.
+5. To restore a snapshot, completely close Codex. Normal restore does not overwrite current conversations, while full data recovery first creates a safety snapshot.
 
 ### Run from source
 
