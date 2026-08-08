@@ -15,10 +15,6 @@
 - 切换 provider 时同步历史会话元数据，避免旧对话在 Codex 中暂时消失
 - 将工具自己的备份保存在项目目录内
 
-固定行为：
-
-- provider 显示名固定为 `Chione Codex`
-- 不向用户暴露这个名称的编辑入口
 
 English
 
@@ -35,10 +31,6 @@ It handles:
 - Synchronizing historical session metadata when the provider changes so existing conversations remain visible
 - Storing the tool's own backups inside the project directory
 
-Fixed behavior:
-
-- Provider display name is hard-coded to `Chione Codex`
-- The UI does not expose an editor for that name
 
 ## Quick Start / 快速开始
 
