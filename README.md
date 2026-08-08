@@ -1,5 +1,7 @@
 # Codex Responses Tool
 
+Current release: **v1.0**
+
 中文
 
 这是一个面向 Windows 的图形化小工具，用来把 Codex 切换到你指定的 Responses API 地址，并在修改前自动备份本地配置与会话数据。
@@ -58,6 +60,19 @@ Or run directly:
 ```bash
 python app.py
 ```
+
+Windows users can also download the single-file `CodexResponsesTool.exe` from the GitHub Releases page. The executable stores settings and snapshots under `app_data` next to the executable.
+
+## Build the Windows executable / 构建 Windows 可执行文件
+
+Install the development dependency and run the release script:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+.\build_release.ps1
+```
+
+The executable and SHA-256 checksum are written to `dist`.
 
 ## Files / 文件
 

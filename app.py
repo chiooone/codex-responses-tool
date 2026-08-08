@@ -6,6 +6,7 @@ import queue
 import re
 import shutil
 import sqlite3
+import sys
 import threading
 import time
 import urllib.error
@@ -20,7 +21,13 @@ from tkinter import messagebox, ttk
 
 
 APP_NAME = "Codex Responses Tool"
-APP_DIR = Path(__file__).resolve().parent / "app_data"
+APP_VERSION = "1.0"
+PROGRAM_DIR = (
+    Path(sys.executable).resolve().parent
+    if getattr(sys, "frozen", False)
+    else Path(__file__).resolve().parent
+)
+APP_DIR = PROGRAM_DIR / "app_data"
 BACKUP_DIR = APP_DIR / "backups"
 SETTINGS_FILE = "settings.json"
 TEMPLATE_CATALOG_PATH = Path(__file__).with_name("assets") / "codex_model_catalog.json"
@@ -715,7 +722,7 @@ def describe_snapshot(snapshot_dir: Path) -> str:
 class AppUI:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.root.title(APP_NAME)
+        self.root.title(f"{APP_NAME} v{APP_VERSION}")
         self.root.geometry("980x700")
         self.root.minsize(920, 640)
         self.work_queue: queue.Queue[tuple[str, Any]] = queue.Queue()
