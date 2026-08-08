@@ -1,0 +1,30 @@
+# Local application data: contains API keys, Codex auth, sessions, and snapshots.
+app_data/
+
+# Python caches and environments.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Local secrets and environment files.
+.env
+.env.*
+*.key
+*.pem
+
+# Build and packaging output.
+build/
+dist/
+*.egg-info/
+
+# Editor and operating-system files.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
