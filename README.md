@@ -1,69 +1,8 @@
 # Codex Responses Tool
 
-Current release / 当前版本：**v1.0**
+当前版本 / Current release：**v1.0**
 
-[Download v1.0 / 下载 v1.0](https://github.com/chiooone/codex-responses-tool/releases/tag/v1.0)
-
-## English
-
-Codex Responses Tool is a Windows-first graphical utility that connects Codex Desktop to a user-provided Responses API endpoint. Before making changes, it automatically backs up the local Codex configuration and conversation data.
-
-### Features
-
-- Detects `CODEX_HOME`, falling back to the user `.codex` directory when unset.
-- Detects `CODEX_SQLITE_HOME`, falling back to `CODEX_HOME` when unset.
-- Detects available API models and presents them in a selection list.
-- Writes Codex `config.toml` and `cpa-gui-model-catalog.json`.
-- Uses the fixed provider display name `Chione Codex`.
-- Backs up and restores Codex configuration and local conversation data.
-- Synchronizes historical conversation metadata when switching providers so existing conversations remain visible.
-- Stores saved API settings and snapshots in `app_data` next to the program.
-
-### Quick start
-
-1. Enter the Responses API base URL and API key.
-2. Detect the available models and select a default model.
-3. Close Codex, then click `Apply to Codex`.
-4. Restart Codex after the success message appears.
-5. To restore a snapshot, completely close Codex before confirming the restore warning.
-
-### Run from source
-
-Use `start.bat`, run `.\start.ps1` in PowerShell, or run:
-
-```powershell
-python app.py
-```
-
-### Windows executable
-
-Download the single-file `CodexResponsesTool.exe` from GitHub Releases. Python is not required. The executable stores settings and snapshots under `app_data` next to the executable.
-
-The executable is currently unsigned, so Windows SmartScreen may display a warning the first time it runs. Verify the SHA-256 checksum shown on the Release page before running it.
-
-### Build the executable
-
-```powershell
-python -m pip install -r requirements-dev.txt
-.\build_release.ps1
-```
-
-The executable and SHA-256 checksum are written to `dist`.
-
-### Project files
-
-- `app.py` — main GUI application.
-- `start.bat` — Windows launcher.
-- `start.ps1` — PowerShell launcher.
-- `build_release.ps1` — reproducible Windows release build script.
-- `assets/codex_model_catalog.json` — bundled Codex model catalog template.
-
-### Notes
-
-- The tool only performs local file backup and restore operations.
-- Environment-variable changes to Codex storage locations are detected automatically.
-- Snapshots created by this tool are stored under `app_data/backups`.
-- Applying a provider updates compatible rollout `session_meta` records and SQLite `threads` rows. A snapshot is created first so the operation remains reversible.
+[下载 v1.0 / Download v1.0](https://github.com/chiooone/codex-responses-tool/releases/tag/v1.0)
 
 ## 简体中文
 
@@ -125,3 +64,64 @@ python -m pip install -r requirements-dev.txt
 - 通过环境变量修改 Codex 数据位置后，程序会自动识别新路径。
 - 本工具创建的快照保存在 `app_data/backups` 中。
 - 应用 provider 时会更新兼容的 rollout `session_meta` 记录和 SQLite `threads` 数据；操作前会先创建快照，因此可以恢复。
+
+## English
+
+Codex Responses Tool is a Windows-first graphical utility that connects Codex Desktop to a user-provided Responses API endpoint. Before making changes, it automatically backs up the local Codex configuration and conversation data.
+
+### Features
+
+- Detects `CODEX_HOME`, falling back to the user `.codex` directory when unset.
+- Detects `CODEX_SQLITE_HOME`, falling back to `CODEX_HOME` when unset.
+- Detects available API models and presents them in a selection list.
+- Writes Codex `config.toml` and `cpa-gui-model-catalog.json`.
+- Uses the fixed provider display name `Chione Codex`.
+- Backs up and restores Codex configuration and local conversation data.
+- Synchronizes historical conversation metadata when switching providers so existing conversations remain visible.
+- Stores saved API settings and snapshots in `app_data` next to the program.
+
+### Quick start
+
+1. Enter the Responses API base URL and API key.
+2. Detect the available models and select a default model.
+3. Close Codex, then click `Apply to Codex`.
+4. Restart Codex after the success message appears.
+5. To restore a snapshot, completely close Codex before confirming the restore warning.
+
+### Run from source
+
+Use `start.bat`, run `.\start.ps1` in PowerShell, or run:
+
+```powershell
+python app.py
+```
+
+### Windows executable
+
+Download the single-file `CodexResponsesTool.exe` from GitHub Releases. Python is not required. The executable stores settings and snapshots under `app_data` next to the executable.
+
+The executable is currently unsigned, so Windows SmartScreen may display a warning the first time it runs. Verify the SHA-256 checksum shown on the Release page before running it.
+
+### Build the executable
+
+```powershell
+python -m pip install -r requirements-dev.txt
+.\build_release.ps1
+```
+
+The executable and SHA-256 checksum are written to `dist`.
+
+### Project files
+
+- `app.py` — main GUI application.
+- `start.bat` — Windows launcher.
+- `start.ps1` — PowerShell launcher.
+- `build_release.ps1` — reproducible Windows release build script.
+- `assets/codex_model_catalog.json` — bundled Codex model catalog template.
+
+### Notes
+
+- The tool only performs local file backup and restore operations.
+- Environment-variable changes to Codex storage locations are detected automatically.
+- Snapshots created by this tool are stored under `app_data/backups`.
+- Applying a provider updates compatible rollout `session_meta` records and SQLite `threads` rows. A snapshot is created first so the operation remains reversible.
